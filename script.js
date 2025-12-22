@@ -174,6 +174,25 @@ function drawHiddenMessage() {
     }
 }
 
+function drawGlitchLines() {
+    if (Math.random() > 0.1) return; // 10%の確率で描画フレーム
+
+    const lineCount = Math.floor(Math.random() * 5) + 1;
+    for (let i = 0; i < lineCount; i++) {
+        const y = Math.random() * height;
+        const h = Math.random() * 50 + 2; // 太さ
+        const w = Math.random() * width;
+        const x = Math.random() * width;
+        
+        ctx.fillStyle = Math.random() > 0.5 ? 'rgba(0, 255, 255, 0.5)' : 'rgba(255, 0, 255, 0.5)'; // シアン or マゼンタ
+        ctx.fillRect(0, y, width, h); // 全幅
+        
+        // 断片的なノイズも
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillRect(x, y, Math.random() * 100, Math.random() * 5);
+    }
+}
+
 function animate() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
     ctx.fillRect(0, 0, width, height);
@@ -184,6 +203,7 @@ function animate() {
     }
 
     createStaticNoise();
+    drawGlitchLines(); // 追加
     drawHiddenMessage();
 
     requestAnimationFrame(animate);
@@ -293,3 +313,31 @@ setInterval(() => {
     console.warn("デベロッパーツール閉じろ");
     console.error("不正禁止");
 }, 1000);
+
+// --- Canvas Persistence (Anti-Tamper) ---
+const canvasObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.target === canvas) {
+            const style = window.getComputedStyle(canvas);
+            if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+                canvas.style.display = 'block';
+                canvas.style.visibility = 'visible';
+                canvas.style.opacity = '1';
+                console.warn("キャンバスの非表示は許可されていません");
+            }
+        }
+    });
+});
+canvasObserver.observe(canvas, { attributes: true, attributeFilter: ['style', 'class', 'hidden'] });
+
+const bodyObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        mutation.removedNodes.forEach((node) => {
+            if (node === canvas) {
+                document.body.appendChild(canvas);
+                console.warn("キャンバスの削除は許可されていません");
+            }
+        });
+    });
+});
+bodyObserver.observe(document.body, { childList: true });
