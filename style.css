@@ -1,0 +1,113 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #000;
+    font-family: 'Courier New', Courier, monospace;
+    color: #fff;
+}
+
+#noiseCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.content {
+    position: relative;
+    z-index: 2;
+    pointer-events: none; /* コンテンツがマウスイベントを邪魔しないように */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    text-shadow: 0 0 10px #ff0000;
+    mix-blend-mode: difference;
+}
+
+h1 {
+    font-size: 3rem;
+    letter-spacing: 0.5rem;
+    animation: glitch 1s infinite;
+}
+
+@keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+}
+
+.popup {
+    position: absolute;
+    width: 300px;
+    background: #c0c0c0;
+    border: 2px solid #fff;
+    border-right-color: #000;
+    border-bottom-color: #000;
+    box-shadow: 2px 2px 0 #000;
+    color: #000;
+    font-family: 'Tahoma', sans-serif;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+}
+
+.popup-header {
+    background: #000080;
+    color: #fff;
+    padding: 2px 5px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+}
+
+.popup-close {
+    background: #c0c0c0;
+    color: #000;
+    border: 1px solid #fff;
+    border-right-color: #000;
+    border-bottom-color: #000;
+    width: 16px;
+    height: 16px;
+    line-height: 14px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.popup-body {
+    padding: 10px;
+    text-align: center;
+}
+
+.popup-close:active {
+    border: 1px solid #000;
+    border-right-color: #fff;
+    border-bottom-color: #fff;
+}
+
+.secret-hint {
+    position: absolute;
+    color: #fff;
+    font-size: 24px;
+    opacity: 0;
+    transition: opacity 0.5s;
+    cursor: help;
+    z-index: 50;
+    user-select: none;
+}
+
+.secret-hint:hover {
+    opacity: 1;
+}
