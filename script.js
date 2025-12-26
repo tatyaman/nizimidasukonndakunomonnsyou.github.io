@@ -206,6 +206,9 @@ function animate() {
     drawGlitchLines(); // 追加
     drawHiddenMessage();
 
+    // 飛び回る画像の更新
+    flyingImages.forEach(img => img.update());
+
     requestAnimationFrame(animate);
 }
 
@@ -284,10 +287,7 @@ window.addEventListener('mousemove', (e) => {
     startHintTimer(); // マウスが動いたらタイマーリセット
 });
 
-// Initialization
-resize();
-setHintPosition();
-animate();
+// Initialization (Moved to end of file)
 
 // Initial Popup
 setTimeout(() => {
@@ -296,6 +296,132 @@ setTimeout(() => {
 
 // Hint Timer Start
 startHintTimer();
+
+// --- Hint Timer Visualization ---
+let isTimerVisible = false;
+const timerDisplay = document.getElementById('timer-display');
+const hintTrigger = document.getElementById('kabutomusi');
+
+if (hintTrigger) {
+    hintTrigger.addEventListener('click', () => {
+        isTimerVisible = !isTimerVisible;
+        if (isTimerVisible) {
+            timerDisplay.style.display = 'block';
+            updateTimerDisplay();
+        } else {
+            timerDisplay.style.display = 'none';
+        }
+    });
+}
+
+function updateTimerDisplay() {
+    if (!isTimerVisible) return;
+
+    const now = Date.now();
+    const elapsed = now - lastMouseMoveTime;
+    const remaining = Math.max(0, 20000 - elapsed);
+    
+    // 秒数をフォーマット (例: 13.45)
+    timerDisplay.innerText = (remaining / 1000).toFixed(2);
+
+    requestAnimationFrame(updateTimerDisplay);
+}
+
+// --- Flying Images Logic ---
+const ajuImages = [
+    "aju (135).JPG", "aju (154).JPG", "aju (175).JPG", "aju (184).JPG", "aju (201).JPG",
+    "aju (253).JPG", "aju (26).JPG", "aju (294).JPG", "aju (298).JPG", "aju (3).JPG",
+    "aju (33).JPG", "aju (34).JPG", "aju (35).JPG", "aju (39).JPG", "aju (404).JPG",
+    "aju (468).JPG", "aju (5).JPG", "aju (75).JPG", "aju (80).JPG", "aju (81).JPG"
+];
+
+let flyingImages = [];
+
+class FlyingImage {
+    constructor() {
+        this.element = document.createElement('img');
+        this.element.src = `aju/${ajuImages[Math.floor(Math.random() * ajuImages.length)]}`;
+        this.element.className = 'flying-image';
+        
+        // 初期位置とサイズ
+        this.width = 150; // 適当なサイズ
+        this.x = Math.random() * (window.innerWidth - this.width);
+        this.y = Math.random() * (window.innerHeight - this.width);
+        
+        // 速度
+        this.vx = (Math.random() - 0.5) * 10;
+        this.vy = (Math.random() - 0.5) * 10;
+        
+        // DOM設定
+        this.element.style.position = 'absolute';
+        this.element.style.left = this.x + 'px';
+        this.element.style.top = this.y + 'px';
+        this.element.style.width = this.width + 'px';
+        this.element.style.zIndex = '50';
+        this.element.style.cursor = 'pointer';
+        
+        // クリックで削除
+        this.element.addEventListener('click', () => {
+            this.remove();
+        });
+        
+        document.body.appendChild(this.element);
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // 壁反射
+        if (this.x <= 0 || this.x + this.width >= window.innerWidth) this.vx *= -1;
+        if (this.y <= 0 || this.y + this.width >= window.innerHeight) this.vy *= -1;
+
+        this.element.style.left = this.x + 'px';
+        this.element.style.top = this.y + 'px';
+    }
+
+    remove() {
+        if (this.element.parentElement) {
+            document.body.removeChild(this.element);
+        }
+        flyingImages = flyingImages.filter(img => img !== this);
+
+        // 全て消されたら新たに3枚追加
+        if (flyingImages.length === 0) {
+            spawnFlyingImages(3);
+        }
+    }
+}
+
+function spawnFlyingImages(count) {
+    for (let i = 0; i < count; i++) {
+        flyingImages.push(new FlyingImage());
+    }
+}
+
+// Initialization
+resize();
+setHintPosition();
+spawnFlyingImages(3); // 初回に3枚表示
+animate();
+
+// --- Reset Feature ---
+const resetBtn = document.getElementById('reset-btn');
+const hugePopup = document.getElementById('huge-popup');
+const resetYes = document.getElementById('reset-yes');
+const resetNo = document.getElementById('reset-no');
+
+resetBtn.addEventListener('click', () => {
+    hugePopup.classList.remove('hidden');
+});
+
+resetYes.addEventListener('click', () => {
+    location.reload();
+});
+
+resetNo.addEventListener('click', () => {
+    hugePopup.classList.add('hidden');
+});
 
 // --- DevTools Countermeasures ---
 setInterval(() => {
